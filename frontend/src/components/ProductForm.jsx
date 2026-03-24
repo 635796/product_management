@@ -1,44 +1,68 @@
 import React, { useState } from "react";
 
-function ProductForm({ setProducts }) {
+function ProductForm({ onProductAdded }) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
 
-  const handleSave = () => {
-    if (!name || !category) return;
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-    setProducts((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1, // TEMPORARY for UI only, backend will override later
-        name,
-        category,
-      },
-    ]);
+    if (!name || !category) {
+      alert("Both fields are required");
+      return;
+    }
 
+    // send product back to Home.jsx
+    await onProductAdded({ name, category });
+
+    // reset fields
     setName("");
     setCategory("");
-  };
+  }
 
   return (
-    <div className="form-section">
-      <input
-        className="input-box"
-        placeholder="Product Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+    <div style={{ marginBottom: "20px" }}>
+      <h3>Add New Product</h3>
 
-      <input
-        className="input-box"
-        placeholder="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      />
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Product Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          style={{
+            padding: "8px",
+            marginRight: "10px",
+            width: "200px",
+          }}
+        />
 
-      <button className="save-btn" onClick={handleSave}>
-        Save
-      </button>
+        <input
+          type="text"
+          placeholder="Category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          style={{
+            padding: "8px",
+            marginRight: "10px",
+            width: "200px",
+          }}
+        />
+
+        <button
+          type="submit"
+          style={{
+            padding: "8px 16px",
+            background: "#1a73e8",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Add
+        </button>
+      </form>
     </div>
   );
 }
