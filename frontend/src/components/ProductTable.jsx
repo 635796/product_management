@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 
-function ProductTable({ products, onDelete, onUpdate }) {
+function ProductTable({ products, onDelete, onUpdate, isAdmin }) {
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("");
 
   function startEdit(product) {
+    if (!isAdmin) return; // extra safety
     setEditingId(product.id);
     setEditName(product.name);
     setEditCategory(product.category);
@@ -18,6 +19,7 @@ function ProductTable({ products, onDelete, onUpdate }) {
   }
 
   function saveEdit(id) {
+    if (!isAdmin) return;
     onUpdate(id, { name: editName, category: editCategory });
     cancelEdit();
   }
@@ -53,8 +55,8 @@ function ProductTable({ products, onDelete, onUpdate }) {
             <tr key={p.id}>
               <td>{p.id}</td>
 
-              {/* Editing row */}
-              {editingId === p.id ? (
+              {/* ✅ Editing row (ADMIN only) */}
+              {isAdmin && editingId === p.id ? (
                 <>
                   <td>
                     <input
@@ -103,35 +105,40 @@ function ProductTable({ products, onDelete, onUpdate }) {
                 </>
               ) : (
                 <>
-                  {/* Normal row */}
+                  {/* ✅ Normal read-only row */}
                   <td>{p.name}</td>
                   <td>{p.category}</td>
 
                   <td>
-                    <button
-                      onClick={() => startEdit(p)}
-                      style={{
-                        background: "orange",
-                        color: "white",
-                        padding: "5px 10px",
-                        marginRight: "10px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Edit
-                    </button>
+                    {/* ✅ Actions visible only to ADMIN */}
+                    {isAdmin && (
+                      <>
+                        <button
+                          onClick={() => startEdit(p)}
+                          style={{
+                            background: "orange",
+                            color: "white",
+                            padding: "5px 10px",
+                            marginRight: "10px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Edit
+                        </button>
 
-                    <button
-                      onClick={() => onDelete(p.id)}
-                      style={{
-                        background: "red",
-                        color: "white",
-                        padding: "5px 10px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Delete
-                    </button>
+                        <button
+                          onClick={() => onDelete(p.id)}
+                          style={{
+                            background: "red",
+                            color: "white",
+                            padding: "5px 10px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </td>
                 </>
               )}

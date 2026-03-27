@@ -16,6 +16,10 @@ function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  /* ✅ STEP 1: Read roles from Cognito token */
+  const groups = auth.user?.profile?.["cognito:groups"] || [];
+  const isAdmin = groups.includes("ADMIN");
+
   useEffect(() => {
     if (auth.isAuthenticated) {
       refreshProducts();
@@ -29,12 +33,7 @@ function Home() {
       if (!idToken) return;
 
       const data = await getProducts(idToken);
-
-      if (Array.isArray(data)) {
-        setProducts(data);
-      } else {
-        setProducts([]);
-      }
+      setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Product fetch failed:", err);
     } finally {
@@ -61,7 +60,11 @@ function Home() {
   }
 
   if (!auth.isAuthenticated) {
-    return <h2 style={{ marginTop: "100px", textAlign: "center" }}>Please login first</h2>;
+    return (
+      <h2 style={{ marginTop: "100px", textAlign: "center" }}>
+        Please login first
+      </h2>
+    );
   }
 
   return (
@@ -69,7 +72,7 @@ function Home() {
       className="container"
       style={{
         padding: "20px",
-        background: "#ffffff",           // 🌟 Light background added
+        background: "#ffffff",
         minHeight: "100vh",
         borderRadius: "10px",
       }}
@@ -78,7 +81,8 @@ function Home() {
         Products Management App
       </h1>
 
-      <ProductForm onProductAdded={handleAdd} />
+      {/* ✅ STEP 2: Allow add only for ADMIN */}
+      {isAdmin && <ProductForm onProductAdded={handleAdd} />}
 
       <button
         style={{
@@ -98,10 +102,12 @@ function Home() {
 
       {loading && <p>Loading...</p>}
 
+      {/* ✅ STEP 3: Pass isAdmin to control UI inside table */}
       <ProductTable
         products={products}
         onDelete={handleDelete}
         onUpdate={handleUpdate}
+        isAdmin={isAdmin}
       />
     </div>
   );

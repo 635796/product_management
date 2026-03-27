@@ -2,6 +2,7 @@ package com.products.controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;   // ✅ ADD
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,27 +27,37 @@ public class ProductController {
         this.service = service;
     }
 
+    // ✅ ADMIN + USER can view products
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<Product> getAll() {
         return service.getAll();
     }
 
+    // ✅ ADMIN + USER can view by id
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public Product getById(@PathVariable Long id) {
         return service.getById(id);
     }
 
+    // ✅ ONLY ADMIN can create
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Product create(@RequestBody Product p) {
         return service.save(p);
     }
 
+    // ✅ ONLY ADMIN can update
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Product update(@PathVariable Long id, @RequestBody Product p) {
         return service.update(id, p);
     }
 
+    // ✅ ONLY ADMIN can delete
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
