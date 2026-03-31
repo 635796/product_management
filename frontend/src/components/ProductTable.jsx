@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 
-function ProductTable({ products, onDelete, onUpdate, isAdmin }) {
+function ProductTable({ onDelete, onUpdate, isAdmin }) {
+  const products = useSelector((state) => state.products.list || []);
+
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("");

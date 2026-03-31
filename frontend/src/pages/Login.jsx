@@ -1,13 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const auth = useAuth();
+  const navigate = useNavigate();
+
+  // ✅ Redirect authenticated users to Home
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      navigate("/home");
+    }
+  }, [auth.isAuthenticated, navigate]);
 
   if (auth.isLoading) {
-    return <div style={{ marginTop: "120px", textAlign: "center" }}>
-      Loading...
-    </div>;
+    return (
+      <div style={{ marginTop: "120px", textAlign: "center" }}>
+        Loading...
+      </div>
+    );
   }
 
   if (auth.error) {
@@ -18,32 +29,7 @@ function Login() {
     );
   }
 
-  // If user is authenticated, show welcome message + logout
-  if (auth.isAuthenticated) {
-    return (
-      <div style={{ marginTop: "120px", textAlign: "center" }}>
-        <h2>Welcome {auth.user?.profile?.email}</h2>
-
-        <button
-          onClick={() => auth.removeUser()}
-          style={{
-            padding: "10px 20px",
-            marginTop: "20px",
-            fontSize: "16px",
-            backgroundColor: "red",
-            border: "none",
-            color: "white",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
-      </div>
-    );
-  }
-
-  // Default login screen
+  // ✅ Default login screen (only for unauthenticated users)
   return (
     <div style={{ marginTop: "120px", textAlign: "center" }}>
       <h1>Products WebApp</h1>

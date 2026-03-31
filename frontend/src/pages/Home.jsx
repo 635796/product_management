@@ -1,62 +1,64 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 import ProductForm from "../components/ProductForm.jsx";
 import ProductTable from "../components/ProductTable.jsx";
+
 import {
-  getProducts,
-  addProduct,
-  updateProduct,
-  deleteProduct,
-} from "../api/productsApi.js";
+  fetchProductsRequest,
+  addProductRequest,
+  updateProductRequest,
+  deleteProductRequest,
+} from "../redux/actions/productActions";
 
 function Home() {
   const auth = useAuth();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  /* ✅ Redux state */
+  const products = useSelector((state) => state.products.list);
+  const loading = useSelector((state) => state.products.loading);
+  const error = useSelector((state) => state.products.error);
 
-  /* ✅ STEP 1: Read roles from Cognito token */
+  /* ✅ Read roles from Cognito token */
   const groups = auth.user?.profile?.["cognito:groups"] || [];
   const isAdmin = groups.includes("ADMIN");
 
+  /* ✅ Fetch products via Redux Saga */
   useEffect(() => {
     if (auth.isAuthenticated) {
-      refreshProducts();
+      dispatch(fetchProductsRequest());
     }
-  }, [auth.isAuthenticated]);
+  }, [auth.isAuthenticated, dispatch]);
 
-  async function refreshProducts() {
-    try {
-      setLoading(true);
-      const idToken = auth.user?.id_token;
-      if (!idToken) return;
-
-      const data = await getProducts(idToken);
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Product fetch failed:", err);
-    } finally {
-      setLoading(false);
-    }
+  /* ✅ Redux intent handlers */
+  function handleAdd(product) {
+    dispatch(addProductRequest(product));
   }
 
-  async function handleAdd(product) {
-    const idToken = auth.user?.id_token;
-    await addProduct(idToken, product);
-    refreshProducts();
+  function handleDelete(id) {
+    dispatch(deleteProductRequest(id));
   }
 
-  async function handleDelete(id) {
-    const idToken = auth.user?.id_token;
-    await deleteProduct(idToken, id);
-    refreshProducts();
+  function handleUpdate(id, product) {
+    dispatch(updateProductRequest({ id, product }));
   }
 
-  async function handleUpdate(id, product) {
-    const idToken = auth.user?.id_token;
-    await updateProduct(idToken, id, product);
-    refreshProducts();
+  /* ✅ Logout handler (unchanged) */
+  function handleLogout() {
+    auth.removeUser();
+
+    const logoutRedirectUrl = window.location.origin + "/";
+
+    const cognitoLogoutUrl =
+      "https://us-east-1i5qc8tt6g.auth.us-east-1.amazoncognito.com/logout" +
+      "?client_id=6nujo7uno7174icnbh5mf7i1dr" +
+      "&logout_uri=" + encodeURIComponent(logoutRedirectUrl);
+
+    window.location.href = cognitoLogoutUrl;
   }
 
   if (!auth.isAuthenticated) {
@@ -75,13 +77,32 @@ function Home() {
         background: "#ffffff",
         minHeight: "100vh",
         borderRadius: "10px",
+        position: "relative",
       }}
     >
+      {/* ✅ Logout button */}
+      <button
+        onClick={handleLogout}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          padding: "8px 16px",
+          background: "red",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+        }}
+      >
+        Logout
+      </button>
+
       <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
         Products Management App
       </h1>
 
-      {/* ✅ STEP 2: Allow add only for ADMIN */}
+      {/* ✅ ADMIN only */}
       {isAdmin && <ProductForm onProductAdded={handleAdd} />}
 
       <button
@@ -95,16 +116,16 @@ function Home() {
           borderRadius: "6px",
           cursor: "pointer",
         }}
-        onClick={refreshProducts}
+        onClick={() => dispatch(fetchProductsRequest())}
       >
         Refresh
       </button>
 
       {loading && <p>Loading...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* ✅ STEP 3: Pass isAdmin to control UI inside table */}
+      {/* ✅ ProductTable now reads from Redux directly */}
       <ProductTable
-        products={products}
         onDelete={handleDelete}
         onUpdate={handleUpdate}
         isAdmin={isAdmin}
