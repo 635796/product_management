@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import ProductForm from "../components/ProductForm.jsx";
 import ProductTable from "../components/ProductTable.jsx";
+import LifecycleLogger from "../components/LifecycleLogger";
 
 import {
   fetchProductsRequest,
@@ -70,67 +71,70 @@ function Home() {
   }
 
   return (
-    <div
-      className="container"
-      style={{
-        padding: "20px",
-        background: "#ffffff",
-        minHeight: "100vh",
-        borderRadius: "10px",
-        position: "relative",
-      }}
-    >
-      {/* ✅ Logout button */}
-      <button
-        onClick={handleLogout}
+    <> 
+      <LifecycleLogger />
+      <div
+        className="container"
         style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          padding: "8px 16px",
-          background: "red",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
+          padding: "20px",
+          background: "#ffffff",
+          minHeight: "100vh",
+          borderRadius: "10px",
+          position: "relative",
         }}
       >
-        Logout
-      </button>
+        {/* ✅ Logout button */}
+        <button
+          onClick={handleLogout}
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+            padding: "8px 16px",
+            background: "red",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
 
-      <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
-        Products Management App
-      </h1>
+        <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
+          Products Management App
+        </h1>
 
-      {/* ✅ ADMIN only */}
-      {isAdmin && <ProductForm onProductAdded={handleAdd} />}
+        {/* ✅ ADMIN only */}
+        {isAdmin && <ProductForm onProductAdded={handleAdd} />}
 
-      <button
-        style={{
-          padding: "10px 18px",
-          marginTop: "20px",
-          marginBottom: "20px",
-          background: "#1a73e8",
-          color: "#fff",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-        }}
-        onClick={() => dispatch(fetchProductsRequest())}
-      >
-        Refresh
-      </button>
+        <button
+          style={{
+            padding: "10px 18px",
+            marginTop: "20px",
+            marginBottom: "20px",
+            background: "#1a73e8",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+          onClick={() => dispatch(fetchProductsRequest())}
+        >
+          Refresh
+        </button>
 
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {loading && <p>Loading...</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* ✅ ProductTable now reads from Redux directly */}
-      <ProductTable
-        onDelete={handleDelete}
-        onUpdate={handleUpdate}
-        isAdmin={isAdmin}
-      />
-    </div>
+        {/* ✅ ProductTable now reads from Redux directly */}
+        <ProductTable
+          onDelete={handleDelete}
+          onUpdate={handleUpdate}
+          isAdmin={isAdmin}
+        />
+      </div>
+    </>
   );
 }
 
